@@ -12,7 +12,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: PropertyRepository::class)]
 #[ORM\InheritanceType(value: "SINGLE_TABLE")]
-#[ORM\DiscriminatorColumn(name: "type")]
+#[ORM\DiscriminatorColumn(name: "type", type: "string")]
 #[ORM\DiscriminatorMap(value: [
     'warehouse' => 'Warehouse',
     'office' => 'Office',
@@ -41,9 +41,6 @@ class Property
 
     #[ORM\Column(length: 255, nullable: true)]
     protected ?string $longitude = null;
-
-    #[ORM\Column(length: 255)]
-    protected ?string $type = null;
 
     #[ORM\Column]
     protected ?bool $featured = null;
@@ -168,18 +165,6 @@ class Property
     public function setLongitude(?string $longitude): self
     {
         $this->longitude = $longitude;
-
-        return $this;
-    }
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(string $type): self
-    {
-        $this->type = $type;
 
         return $this;
     }
