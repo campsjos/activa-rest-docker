@@ -11,6 +11,14 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: PropertyRepository::class)]
+#[ORM\InheritanceType(value: "SINGLE_TABLE")]
+#[ORM\DiscriminatorColumn(name: "type")]
+#[ORM\DiscriminatorMap(value: [
+    'warehouse' => 'Warehouse',
+    'office' => 'Office',
+    'residence' => 'Residence',
+    'local' => 'Local',
+])]
 #[ApiResource]
 class Property
 {
