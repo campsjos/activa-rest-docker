@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\Local;
+use App\Entity\Location;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Local>
+ * @extends ServiceEntityRepository<Location>
  *
- * @method Local|null find($id, $lockMode = null, $lockVersion = null)
- * @method Local|null findOneBy(array $criteria, array $orderBy = null)
- * @method Local[]    findAll()
- * @method Local[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Location|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Location|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Location[]    findAll()
+ * @method Location[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class LocalRepository extends ServiceEntityRepository
+class LocationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Local::class);
+        parent::__construct($registry, Location::class);
     }
 
-    public function add(Local $entity, bool $flush = false): void
+    public function add(Location $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class LocalRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(Local $entity, bool $flush = false): void
+    public function remove(Location $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +40,7 @@ class LocalRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return Local[] Returns an array of Local objects
+//     * @return Location[] Returns an array of Location objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +54,7 @@ class LocalRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Local
+//    public function findOneBySomeField($value): ?Location
 //    {
 //        return $this->createQueryBuilder('l')
 //            ->andWhere('l.exampleField = :val')

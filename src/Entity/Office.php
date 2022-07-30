@@ -3,12 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\OficinaRepository;
+use App\Repository\OfficeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: OficinaRepository::class)]
+#[ORM\Entity(repositoryClass: OfficeRepository::class)]
 #[ApiResource]
-class Oficina
+class Office
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

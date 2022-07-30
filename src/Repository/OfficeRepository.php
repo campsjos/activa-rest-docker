@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\Oficina;
+use App\Entity\Office;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Oficina>
+ * @extends ServiceEntityRepository<Office>
  *
- * @method Oficina|null find($id, $lockMode = null, $lockVersion = null)
- * @method Oficina|null findOneBy(array $criteria, array $orderBy = null)
- * @method Oficina[]    findAll()
- * @method Oficina[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Office|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Office|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Office[]    findAll()
+ * @method Office[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class OficinaRepository extends ServiceEntityRepository
+class OfficeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Oficina::class);
+        parent::__construct($registry, Office::class);
     }
 
-    public function add(Oficina $entity, bool $flush = false): void
+    public function add(Office $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class OficinaRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(Oficina $entity, bool $flush = false): void
+    public function remove(Office $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +40,7 @@ class OficinaRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return Oficina[] Returns an array of Oficina objects
+//     * @return Office[] Returns an array of Office objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +54,7 @@ class OficinaRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Oficina
+//    public function findOneBySomeField($value): ?Office
 //    {
 //        return $this->createQueryBuilder('o')
 //            ->andWhere('o.exampleField = :val')
