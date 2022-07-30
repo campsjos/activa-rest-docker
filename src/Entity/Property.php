@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: PropertyRepository::class)]
 #[ApiResource]
@@ -16,61 +17,69 @@ class Property
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    protected ?int $id = null;
 
     #[ORM\ManyToMany(targetEntity: Feature::class)]
-    private Collection $features;
+    protected Collection $features;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $address = null;
+    protected ?string $address = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $postalCode = null;
+    protected ?string $postalCode = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $latitude = null;
+    protected ?string $latitude = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $longitude = null;
+    protected ?string $longitude = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    protected ?string $type = null;
 
     #[ORM\Column]
-    private ?bool $featured = null;
+    protected ?bool $featured = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $image = null;
+    protected ?string $image = null;
 
     #[ORM\Column(type: Types::ARRAY, nullable: true)]
-    private array $gallery = [];
+    protected array $gallery = [];
 
     #[ORM\Column(length: 255)]
-    private ?string $habitatsoftId = null;
+    protected ?string $habitatsoftId = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $operation = null;
+    protected ?string $operation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $price = null;
+    protected ?string $price = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $priceSqm = null;
+    protected ?string $priceSqm = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $reference = null;
+    protected ?string $reference = null;
 
     #[ORM\ManyToMany(targetEntity: Service::class)]
-    private Collection $services;
+    protected Collection $services;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $area = null;
+    protected ?string $area = null;
 
     #[ORM\ManyToOne]
-    private ?Location $location = null;
+    protected ?Location $location = null;
 
     #[ORM\ManyToOne]
-    private ?Category $category = null;
+    protected ?Category $category = null;
+
+    #[Gedmo\Timestampable(on: "create")]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    protected ?\DateTimeInterface $createdAt = null;
+
+    #[Gedmo\Timestampable(on: "update")]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    protected ?\DateTimeInterface $updatedAt = null;
 
     public function __construct()
     {
@@ -319,6 +328,30 @@ class Property
     public function setCategory(?Category $category): self
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

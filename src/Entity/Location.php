@@ -7,6 +7,7 @@ use App\Repository\LocationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ApiResource]
@@ -17,6 +18,7 @@ class Location
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Gedmo\Slug(fields: ['name'])]
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
@@ -42,13 +44,6 @@ class Location
     public function getSlug(): ?string
     {
         return $this->slug;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
-
-        return $this;
     }
 
     public function getName(): ?string

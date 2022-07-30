@@ -8,23 +8,13 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ResidenceRepository::class)]
 #[ApiResource]
-class Residence
+class Residence extends Property
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(nullable: true)]
     private ?int $rooms = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $baths = null;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getRooms(): ?int
     {

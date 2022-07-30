@@ -3,11 +3,11 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\OfficeRepository;
+use App\Repository\LocalRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: OfficeRepository::class)]
+#[ORM\Entity(repositoryClass: LocalRepository::class)]
 #[ApiResource]
-class Office extends Property
+class Local extends Property
 {
 }

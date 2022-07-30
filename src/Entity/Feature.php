@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\FeatureRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: FeatureRepository::class)]
 #[ApiResource]
@@ -15,6 +16,7 @@ class Feature
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Gedmo\Slug(fields: ['name'])]
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
@@ -29,13 +31,6 @@ class Feature
     public function getSlug(): ?string
     {
         return $this->slug;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
-
-        return $this;
     }
 
     public function getName(): ?string

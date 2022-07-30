@@ -10,13 +10,14 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 make: *** No rule to make target `all'.  Stop.
 
 
-# Make data base, printed on Sat Jul 30 20:04:30 2022
+# Make data base, printed on Sat Jul 30 22:47:14 2022
 
 # Variables
 
 # automatic
 <D = $(patsubst %/,%,$(dir $<))
 # automatic
+ 
 ?F = $(notdir $?)
 # environment
 NVM_INC = /Users/campsjos/.nvm/versions/node/v16.15.1/include/node
@@ -173,6 +174,7 @@ MAKELEVEL := 0
 # environment
 LANG = C
 # environment
+ 
 VSCODE_PID = 886
 # variable set hash-table stats:
 # Load=80/1024=8%, Rehash=0, Collisions=2/106=2%
@@ -302,7 +304,6 @@ vendor: composer
 # makefile (from `Makefile', line 44)
 # c = install --prefer-dist --no-dev --no-progress --no-scripts --no-interaction
 # variable set hash-table stats:
- 
 # Load=1/32=3%, Rehash=0, Collisions=0/1=0%
 
 down:
@@ -326,6 +327,6 @@ down:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
 
-# Finished Make data base on Sat Jul 30 20:04:30 2022
+# Finished Make data base on Sat Jul 30 22:47:14 2022
 
  
