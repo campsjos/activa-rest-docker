@@ -2,6 +2,7 @@ version: "3.4"
 
 # Development environment override
 services:
+
   php:
     volumes:
       - ./:/srv/app
@@ -17,6 +18,21 @@ services:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./public:/srv/app/public:ro
 
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-ChangeMe}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+       - pgadmin:/var/lib/pgadmin
+
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    restart: unless-stopped
+    depends_on: 
+      - database
+
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
 
@@ -25,3 +41,6 @@ services:
     ports:
       - "5432"
 ###< doctrine/doctrine-bundle ###
+
+volumes:
+    pgadmin:
