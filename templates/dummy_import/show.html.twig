@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Properties{% endblock %}
+
+{% block body %}
+    {% for property in properties %}
+        <ul>
+            <li>{{ property.name }}</li>
+            <li>{{ property.address }}</li>
+            <li>{{ property.postalCode }}</li>
+            <li>{{ property.area }}</li>
+            <li>{{ property.featured }}</li>
+            <li>{{ property.habitatsoftId }}</li>
+            <li>{{ property.latitude }}, {{ property.longitude }}</li>
+            <li>{{ property.operation }}</li>
+            <li>{{ property.price }}</li>
+            <li>{{ property.priceSqm }}</li>
+            <li>{{ property.reference }}</li>
+            <li>{{ property.category }}</li>
+            <li>{{ property.features | join(', ') }}</li>
+            <li>{{ property.location }}</li>
+            <li>{{ property.services | join(', ') }}</li>
+            <li><img src="{{ property.image }}" loading="lazy" /></li>
+            <li>
+                {% for img in property.gallery %}
+                    <img src="{{ img }}" loading="lazy" />
+                {% endfor %}
+            </li>
+        </ul>
+    {% endfor %}
+{% endblock %}

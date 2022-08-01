@@ -31,6 +31,9 @@ class Location
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     private Collection $locations;
 
+    #[ORM\Column(length: 255)]
+    private ?string $type = null;
+
     public function __construct()
     {
         $this->locations = new ArrayCollection();
@@ -98,5 +101,22 @@ class Location
         }
 
         return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getName();
     }
 }
