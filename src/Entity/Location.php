@@ -103,6 +103,17 @@ class Location
         return $this;
     }
 
+    public function getChildByName(string $name): ?Location
+    {
+        foreach ($this->locations as $location) {
+            if ($name === $location->getName()) {
+                return $location;
+            }
+        }
+
+        return null;
+    }
+
     public function getType(): ?string
     {
         return $this->type;

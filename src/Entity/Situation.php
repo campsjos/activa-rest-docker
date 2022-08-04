@@ -97,4 +97,15 @@ class Situation
 
         return $this;
     }
+
+    public function getChildByName(string $name): ?Situation
+    {
+        foreach ($this->situations as $situation) {
+            if ($name === $situation->getName()) {
+                return $situation;
+            }
+        }
+
+        return null;
+    }
 }
