@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ImportController!{% endblock %}
+
+{% block body %}
+
+<div class="example-wrapper">
+    This friendly message is coming from:
+    <ul>
+        {% for category in categories %}
+        <li>
+            {{ category }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

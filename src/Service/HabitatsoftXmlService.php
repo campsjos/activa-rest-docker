@@ -58,6 +58,18 @@ class HabitatsoftXmlService
         return $locations;
     }
 
+    public function getCategories(): array 
+    {
+        $categories = [];
+        $inmuebles = $this->loadXml();
+        foreach ($inmuebles->Inmueble as $inmueble) {
+            if(in_array($inmueble->LanguageData->Language[0]->txt_Otros->__toString(), $categories)) continue;
+
+            $categories[] = $inmueble->LanguageData->Language[0]->txt_Otros->__toString();
+        }
+        return $categories;
+    }
+
     private function getType(string $type): ?string
     {
         switch ($type) {

@@ -164,4 +164,14 @@ class ImportController extends AbstractController
             'services' => $services,
         ]);
     }
+
+    // Don't import categories until data is normalized by client
+    #[Route('/import/categories', name: 'app_import_categories')]
+    public function importCategories(): Response
+    {
+        $categories = $this->hsXmlService->getCategories();
+        return $this->render('import/categories.html.twig', [
+            'categories' => $categories,
+        ]);
+    }
 }
