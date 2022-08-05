@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Location;
+use App\Entity\Property;
+use App\Entity\Service;
 use App\Entity\Situation;
 use App\Service\HabitatsoftXmlService;
 use Doctrine\Persistence\ManagerRegistry;
@@ -104,6 +106,62 @@ class ImportController extends AbstractController
 
         return $this->render('import/locations.html.twig', [
             'locations' => $locations,
+        ]);
+    }
+
+    #[Route('/import/services', name: 'app_import_services')]
+    public function importServices(): Response
+    {
+        $muelle = new Service();
+        $muelle->setName("Muelle");
+        $muelle->addType(Property::TYPE_WAREHOUSE);
+
+        $puenteGrua = new Service();
+        $puenteGrua->setName("Puente Grúa");
+        $puenteGrua->addType(Property::TYPE_WAREHOUSE);
+
+        $antiincendios = new Service();
+        $antiincendios->setName("Antiincendios");
+        $antiincendios->addType(Property::TYPE_WAREHOUSE);
+
+        $oficina = new Service();
+        $oficina->setName("Oficina");
+        $oficina->addType(Property::TYPE_WAREHOUSE);
+
+        $diafana = new Service();
+        $diafana->setName("Diáfana");
+        $diafana->addType(Property::TYPE_OFFICE);
+        $diafana->addType(Property::TYPE_LOCAL);
+
+        $divisiones = new Service();
+        $divisiones->setName("Divisiones");
+        $divisiones->addType(Property::TYPE_OFFICE);
+        $divisiones->addType(Property::TYPE_LOCAL);
+
+        $fincaRegia = new Service();
+        $fincaRegia->setName("Finca Regia");
+        $fincaRegia->addType(Property::TYPE_OFFICE);
+
+        $escaparate = new Service();
+        $escaparate->setName("Escaparate");
+        $escaparate->addType(Property::TYPE_LOCAL);
+        
+        $this->em->persist($muelle);
+        $this->em->persist($puenteGrua);
+        $this->em->persist($antiincendios);
+        $this->em->persist($oficina);
+        $this->em->persist($diafana);
+        $this->em->persist($divisiones);
+        $this->em->persist($fincaRegia);
+        $this->em->persist($escaparate); 
+
+        $this->em->flush();
+
+        /** @var Service[] */
+        $services = $this->em->getRepository(Service::class)->findAll();
+
+        return $this->render('import/services.html.twig', [
+            'services' => $services,
         ]);
     }
 }

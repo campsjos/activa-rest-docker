@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\ServiceRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
@@ -23,8 +24,8 @@ class Service
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    #[ORM\Column(type: Types::SIMPLE_ARRAY)]
+    private array $types = [];
 
     public function getId(): ?int
     {
@@ -48,14 +49,23 @@ class Service
         return $this;
     }
 
-    public function getType(): ?string
+    public function getTypes(): array
     {
-        return $this->type;
+        return $this->types;
     }
 
-    public function setType(string $type): self
+    public function setTypes(array $types): self
     {
-        $this->type = $type;
+        $this->types = $types;
+
+        return $this;
+    }
+
+    public function addType(string $type): self
+    {
+        if(!in_array($type, $this->types)) {
+            $this->types[] = $type;
+        }
 
         return $this;
     }
