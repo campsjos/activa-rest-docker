@@ -36,7 +36,7 @@ class ImportController extends AbstractController
             }
             $situation->setName($situationName);
             foreach ($situationChildren as $childName) {
-                if($situation->getChildByName($childName)) continue;
+                if ($situation->getChildByName($childName)) continue;
 
                 $situationChild = new Situation();
                 $situationChild->setName($childName);
@@ -55,10 +55,10 @@ class ImportController extends AbstractController
         ]);
     }
 
-    #[Route('/import/locations', name: 'app_import_locations')]
-    public function importLocations(): Response
+    #[Route('/import/locations/{type}', name: 'app_import_locations')]
+    public function importLocations(string $type): Response
     {
-        $rawLocations = $this->hsXmlService->getLocations();
+        $rawLocations = $this->hsXmlService->getLocations($type);
         $locations = [];
 
         foreach ($rawLocations as $locationName => $locationChildren) {
@@ -68,25 +68,31 @@ class ImportController extends AbstractController
                 $location = new Location();
             }
             $location->setName($locationName);
-            $location->setType('warehouse');
+            $location->addType($type);
             foreach ($locationChildren as $childName => $grandChildren) {
-                if($location->getChildByName($childName)) continue;
+                $locationChild = $location->getChildByName($childName);
 
-                $locationChild = new Location();
-                $locationChild->setName($childName);
-                $locationChild->setType('warehouse');
+                if (!$locationChild) {
+                    $locationChild = new Location();
+                    $locationChild->setName($childName);
+                }
+
+                $locationChild->addType($type);
                 $this->em->persist($locationChild);
 
                 $location->addLocation($locationChild);
 
                 foreach ($grandChildren as $grandChildName) {
-                    if($location->getChildByName($grandChildName)) continue;
-    
-                    $locationGrandChild = new Location();
-                    $locationGrandChild->setName($grandChildName);
-                    $locationGrandChild->setType('warehouse');
+                    $locationGrandChild = $locationChild->getChildByName($grandChildName);
+
+                    if (!$locationGrandChild) {
+                        $locationGrandChild = new Location();
+                        $locationGrandChild->setName($grandChildName);
+                    }
+
+                    $locationGrandChild->addType($type);
                     $this->em->persist($locationGrandChild);
-    
+
                     $locationChild->addLocation($locationGrandChild);
                 }
             }

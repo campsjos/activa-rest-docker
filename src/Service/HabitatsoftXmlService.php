@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Entity\Property;
+
 class HabitatsoftXmlService
 {
     private $staticUrl = "";
@@ -12,7 +14,7 @@ class HabitatsoftXmlService
         $this->staticUrl = $staticAssetsUrl;
     }
 
-    public function getSituations()
+    public function getSituations(): array
     {
         $situations = [];
         $inmuebles = $this->loadXml();
@@ -30,11 +32,13 @@ class HabitatsoftXmlService
         return $situations;
     }
 
-    public function getLocations()
+    public function getLocations(string $type): array
     {
         $locations = [];
         $inmuebles = $this->loadXml();
         foreach ($inmuebles->Inmueble as $inmueble) {
+            if ($this->getType($inmueble->LanguageData->Language->txt_NombreTipoInmueble->__toString()) !== $type) continue;
+
             if (!array_key_exists($inmueble->NombreProvincia->__toString(), $locations)) {
                 $locations[$inmueble->NombreProvincia->__toString()] = [];
             }
@@ -52,6 +56,38 @@ class HabitatsoftXmlService
             }
         }
         return $locations;
+    }
+
+    private function getType(string $type): ?string
+    {
+        switch ($type) {
+            case 'Nave Industrial':
+            case 'Nave industrial':
+            case 'Nave comercial':
+            case 'Terreno industrial':
+            case 'Terreno':
+                return Property::TYPE_WAREHOUSE;
+                break;
+
+            case 'Oficina':
+                return Property::TYPE_OFFICE;
+                break;
+
+            case 'Local':
+                return Property::TYPE_LOCAL;
+                break;
+
+            case 'Casa':
+            case 'Piso':
+            case 'Loft':
+                return Property::TYPE_RESIDENCE;
+                break;
+            default:
+                // dump($type);
+                break;
+        }
+
+        return null;
     }
 
     private function loadXml()

@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\LocationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
@@ -31,8 +32,8 @@ class Location
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     private Collection $locations;
 
-    #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    #[ORM\Column(type: Types::SIMPLE_ARRAY)]
+    private array $types = [];
 
     public function __construct()
     {
@@ -130,4 +131,26 @@ class Location
     {
         return $this->getName();
     }
+
+    public function getTypes(): array
+    {
+        return $this->types;
+    }
+
+    public function setTypes(array $types): self
+    {
+        $this->types = $types;
+
+        return $this;
+    }
+
+    public function addType(string $type): self
+    {
+        if(!in_array($type, $this->types)) {
+            $this->types[] = $type;
+        }
+
+        return $this;
+    }
+
 }

@@ -27,6 +27,11 @@ class Property
     #[ORM\Column]
     protected ?int $id = null;
 
+    public const TYPE_WAREHOUSE = 'warehouse';
+    public const TYPE_OFFICE = 'office';
+    public const TYPE_RESIDENCE = 'residence';
+    public const TYPE_LOCAL = 'local';
+
     #[ORM\ManyToMany(targetEntity: Feature::class)]
     protected Collection $features;
 
