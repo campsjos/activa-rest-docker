@@ -32,9 +32,6 @@ class Property
     public const TYPE_RESIDENCE = 'residence';
     public const TYPE_LOCAL = 'local';
 
-    #[ORM\ManyToMany(targetEntity: Feature::class)]
-    protected Collection $features;
-
     #[ORM\Column(length: 255, nullable: true)]
     protected ?string $address = null;
 
@@ -96,37 +93,12 @@ class Property
 
     public function __construct()
     {
-        $this->features = new ArrayCollection();
         $this->services = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /**
-     * @return Collection<int, Feature>
-     */
-    public function getFeatures(): Collection
-    {
-        return $this->features;
-    }
-
-    public function addFeature(Feature $feature): self
-    {
-        if (!$this->features->contains($feature)) {
-            $this->features->add($feature);
-        }
-
-        return $this;
-    }
-
-    public function removeFeature(Feature $feature): self
-    {
-        $this->features->removeElement($feature);
-
-        return $this;
     }
 
     public function getAddress(): ?string
