@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ImportController!{% endblock %}
+
+{% block body %}
+
+<div class="example-wrapper">
+    This friendly message is coming from:
+    <ol>
+        {% for property in properties %}
+        <li>
+            {{ property.reference }}
+        </li>
+        {% endfor %}
+    </ol>
+</div>
+{% endblock %}

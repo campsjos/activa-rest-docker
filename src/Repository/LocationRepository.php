@@ -39,6 +39,21 @@ class LocationRepository extends ServiceEntityRepository
         }
     }
 
+    /** 
+     * @return Location Return a first level Location
+     */
+    public function findFirstLevelByName($name) {
+        $qb = $this->createQueryBuilder('l');
+
+        return $qb
+            ->andWhere('l.name = :name')
+            ->andWhere($qb->expr()->isNull('l.parent'))
+            ->setParameter('name', $name)
+            ->getQuery()
+            ->getSingleResult()
+            ;
+    }
+
 //    /**
 //     * @return Location[] Returns an array of Location objects
 //     */

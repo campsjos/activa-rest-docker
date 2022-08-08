@@ -91,6 +91,15 @@ class Property
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\ManyToOne]
+    private ?Location $province = null;
+
+    #[ORM\ManyToOne]
+    private ?Location $town = null;
+
+    #[ORM\ManyToOne]
+    private ?Location $zone = null;
+
     public function __construct()
     {
         $this->services = new ArrayCollection();
@@ -262,6 +271,19 @@ class Property
         return $this;
     }
 
+    /**
+     * @param Service[]
+     */
+    public function setServices($services): self
+    {
+        $this->services->clear();
+        foreach ($services as $service) {
+            $this->addService($service);
+        }
+
+        return $this;
+    }
+
     public function removeService(Service $service): self
     {
         $this->services->removeElement($service);
@@ -337,6 +359,42 @@ class Property
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getProvince(): ?Location
+    {
+        return $this->province;
+    }
+
+    public function setProvince(?Location $province): self
+    {
+        $this->province = $province;
+
+        return $this;
+    }
+
+    public function getTown(): ?Location
+    {
+        return $this->town;
+    }
+
+    public function setTown(?Location $town): self
+    {
+        $this->town = $town;
+
+        return $this;
+    }
+
+    public function getZone(): ?Location
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?Location $zone): self
+    {
+        $this->zone = $zone;
 
         return $this;
     }

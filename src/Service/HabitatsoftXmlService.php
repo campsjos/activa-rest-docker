@@ -8,6 +8,7 @@ class HabitatsoftXmlService
 {
     private $staticUrl = "";
     private $fileName = "4385_test.xml";
+    private const ACCOUNT_ID = "4385";
 
     public function __construct(string $staticAssetsUrl)
     {
@@ -58,16 +59,86 @@ class HabitatsoftXmlService
         return $locations;
     }
 
-    public function getCategories(): array 
+    public function getCategories(): array
     {
         $categories = [];
         $inmuebles = $this->loadXml();
         foreach ($inmuebles->Inmueble as $inmueble) {
-            if(in_array($inmueble->LanguageData->Language[0]->txt_Otros->__toString(), $categories)) continue;
+            if (in_array($inmueble->LanguageData->Language[0]->txt_Otros->__toString(), $categories)) continue;
 
             $categories[] = $inmueble->LanguageData->Language[0]->txt_Otros->__toString();
         }
         return $categories;
+    }
+
+    public function getProperties(string $type): array
+    {
+        $properties = [];
+        $inmuebles = $this->loadXml();
+        foreach ($inmuebles->Inmueble as $inmueble) {
+            if ($this->getType($inmueble->LanguageData->Language->txt_NombreTipoInmueble->__toString()) !== $type) continue;
+
+            $property = [
+                "address" => $inmueble->TipoCalle->__toString() . " " . $inmueble->NombreCalleInmueble->__toString() . " " . $inmueble->TipoNumero->__toString() . " " . $inmueble->NumeroCalleInmueble->__toString(),
+                "postalCode" => $inmueble->CodigoPostal->__toString(),
+                "province" => $inmueble->NombreProvincia->__toString(),
+                "town" => $inmueble->NombreMunicipio->__toString(),
+                "zone" => $inmueble->NombreZona->__toString(),
+                "latitude" => $inmueble->Latitud->__toString(),
+                "longitude" => $inmueble->Longitud->__toString(),
+                "featured" => ($inmueble->Destacado === 1),
+                "image" => null,
+                "gallery" => [],
+                "habitatsoftId" => $this->cleanId($inmueble->IdInmueble->__toString()),
+                "operation" => $this->getOperation($inmueble),
+                "area" => (float) $inmueble->SuperficieTotal->__toString(),
+                "price" => (float)$inmueble->Precio1Euros->__toString(),
+                "reference" => $inmueble->NumeroExpediente->__toString(),
+                "services" => [],
+            ];
+
+            if($property["price"] !== 0 && $property["area"] !== 0) {
+                $property["priceSqm"] = round($property["price"] / $property["area"], 2);
+            } else {
+                $property["priceSqm"] = 0;
+            }
+
+            if($inmueble->box_MuelleCarga!=0){
+                $property["services"][]="Muelle";
+            }
+            if($inmueble->box_Grua!=0){
+                $property["services"][]="Punte Grúa";
+            }
+            if($inmueble->box_SistemaAntiIncendios!=0){
+                $property["services"][]="Antiincendios";
+            }
+            if($inmueble->box_Oficina!=0){
+                $property["services"][]="Oficina";
+            }
+            if($inmueble->box_Estructura!=0){
+                $property["services"][]="Finca Regia";
+            }
+            if($inmueble->box_Cubierta!=1){
+                $property["services"][]="Diáfana";
+            }
+            if($inmueble->box_Divisiones!=0){
+                $property["services"][]="Divisiones";
+            }
+            if($inmueble->box_Escaparate!=0){
+                $property["services"][]="Escaparate";
+            }
+
+            if(isset($inmueble->Medias->Fotos->Foto[0])) {
+                $property["image"] = trim($inmueble->Medias->Fotos->Foto[0]->__toString());
+                foreach ($inmueble->Medias->Fotos->Foto as $image) {
+                    $property["gallery"][] = trim($image->__toString());
+                }
+            }
+
+            $properties[] = $property;
+        }
+
+        return $properties;
     }
 
     private function getType(string $type): ?string
@@ -102,7 +173,16 @@ class HabitatsoftXmlService
         return null;
     }
 
-    private function loadXml()
+    private function getOperation(\SimpleXMLElement $inmueble): string
+    {
+        $operation = "alquiler";
+        if($inmueble->LanguageData->Language->txt_NombreOperacion->__toString() == "en venta") {
+            $operation = "venta";
+        }
+        return $operation;
+    }
+
+    private function loadXml(): \SimpleXMLElement
     {
         $file = $this->staticUrl . $this->fileName;
         $fileContent = file_get_contents($file);
@@ -135,5 +215,10 @@ class HabitatsoftXmlService
             }
         }
         return $ret;
+    }
+
+    private function cleanId($str)
+    {
+        return str_replace("." . self::ACCOUNT_ID, "", $str);
     }
 }

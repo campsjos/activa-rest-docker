@@ -2,10 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Local;
 use App\Entity\Location;
+use App\Entity\Office;
 use App\Entity\Property;
+use App\Entity\Residence;
 use App\Entity\Service;
 use App\Entity\Situation;
+use App\Entity\Warehouse;
 use App\Service\HabitatsoftXmlService;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
@@ -22,6 +26,74 @@ class ImportController extends AbstractController
     {
         $this->hsXmlService = $hsXmlService;
         $this->em = $doctrine->getManager();
+    }
+
+    #[Route('/import/properties/{type}', name: 'app_import_properties')]
+    public function importProperties(string $type): Response
+    {
+
+        // TODO: Add translations
+        // TODO: Remove non existent Properties
+        // TODO: Flush entities
+
+        $properties = [];
+        $rawProperties = $this->hsXmlService->getProperties($type);
+        $propertyClass = "";
+        switch ($type) {
+            case Property::TYPE_WAREHOUSE:
+                $propertyClass = Warehouse::class;
+                break;
+            case Property::TYPE_OFFICE:
+                $propertyClass = Office::class;
+                break;
+            case Property::TYPE_LOCAL:
+                $propertyClass = Local::class;
+                break;
+            case Property::TYPE_RESIDENCE:
+                $propertyClass = Residence::class;
+                break;
+        }
+
+        foreach ($rawProperties as $rawProperty) {
+            $property = $this->em->getRepository($propertyClass)->findOneBy(['reference' => $rawProperty["reference"]]);
+            if(!$property) {
+                /** @var Office|Warehouse|Local|Residence */
+                $property = new $propertyClass;
+                $property->setReference($rawProperty['reference']);
+                $property->setAddress($rawProperty['address']);
+                $property->setPostalCode($rawProperty['postalCode']);
+                $property->setLatitude($rawProperty['latitude']);
+                $property->setLongitude($rawProperty['longitude']);
+                $property->setFeatured($rawProperty['featured']);
+                $property->setImage($rawProperty['image']);
+                $property->setGallery($rawProperty['gallery']);
+                $property->setHabitatsoftId($rawProperty['habitatsoftId']);
+                $property->setOperation($rawProperty['operation']);
+                $property->setPrice($rawProperty['price']);
+                $property->setPriceSqm($rawProperty['priceSqm']);
+                $property->setArea($rawProperty['area']);
+                
+                $services = $this->em->getRepository(Service::class)->findBy(['name' => $rawProperty["services"]]);
+                $property->setServices($services);
+                
+                $province = $this->em->getRepository(Location::class)->findFirstLevelByName($rawProperty["province"]);
+                $town = $this->em->getRepository(Location::class)->findOneBy(['name' => $rawProperty['town'], 'parent' => $province]);
+                $zone = $this->em->getRepository(Location::class)->findOneBy(['name' => $rawProperty['zone'], 'parent' => $town]);
+                $property->setProvince($province);
+                $property->setTown($town);
+                $property->setZone($zone);
+
+                $this->em->persist($property);
+            }
+
+            dump($property);
+
+            $properties[] = $property;
+        }
+
+        return $this->render('import/properties.html.twig', [
+            'properties' => $properties,
+        ]);
     }
 
     #[Route('/import/situations', name: 'app_import_situations')]
@@ -145,7 +217,7 @@ class ImportController extends AbstractController
         $escaparate = new Service();
         $escaparate->setName("Escaparate");
         $escaparate->addType(Property::TYPE_LOCAL);
-        
+
         $this->em->persist($muelle);
         $this->em->persist($puenteGrua);
         $this->em->persist($antiincendios);
@@ -153,7 +225,7 @@ class ImportController extends AbstractController
         $this->em->persist($diafana);
         $this->em->persist($divisiones);
         $this->em->persist($fincaRegia);
-        $this->em->persist($escaparate); 
+        $this->em->persist($escaparate);
 
         $this->em->flush();
 
