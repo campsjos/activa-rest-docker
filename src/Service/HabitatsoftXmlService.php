@@ -7,7 +7,7 @@ use App\Entity\Property;
 class HabitatsoftXmlService
 {
     private $staticUrl = "";
-    private $fileName = "4385_test.xml";
+    private $fileName = "4385.xml";
     private const ACCOUNT_ID = "4385";
 
     public function __construct(string $staticAssetsUrl)
@@ -95,40 +95,53 @@ class HabitatsoftXmlService
                 "price" => (float)$inmueble->Precio1Euros->__toString(),
                 "reference" => $inmueble->NumeroExpediente->__toString(),
                 "services" => [],
+                "translations" => [
+                    "es" => [],
+                    "ct" => [],
+                    "en" => [],
+                    "fr" => [],
+                ]
             ];
+            foreach ($property['translations'] as $locale => $value) {
+                $localisedData = $inmueble->LanguageData->xpath('Language[@idlanguage="' . $locale . '"]');
+                $property['translations'][$locale] = [
+                    "title" => $localisedData[0]->txt_Cabecera1->__toString(),
+                    "body" => str_replace('  ', "\n\n", $localisedData[0]->txt_DetalleAlternativo->__toString()),
+                ];
+            }
 
-            if($property["price"] !== 0 && $property["area"] !== 0) {
+            if ($property["price"] !== 0 && $property["area"] !== 0) {
                 $property["priceSqm"] = round($property["price"] / $property["area"], 2);
             } else {
                 $property["priceSqm"] = 0;
             }
 
-            if($inmueble->box_MuelleCarga!=0){
-                $property["services"][]="Muelle";
+            if ($inmueble->box_MuelleCarga != 0) {
+                $property["services"][] = "Muelle";
             }
-            if($inmueble->box_Grua!=0){
-                $property["services"][]="Punte Grúa";
+            if ($inmueble->box_Grua != 0) {
+                $property["services"][] = "Punte Grúa";
             }
-            if($inmueble->box_SistemaAntiIncendios!=0){
-                $property["services"][]="Antiincendios";
+            if ($inmueble->box_SistemaAntiIncendios != 0) {
+                $property["services"][] = "Antiincendios";
             }
-            if($inmueble->box_Oficina!=0){
-                $property["services"][]="Oficina";
+            if ($inmueble->box_Oficina != 0) {
+                $property["services"][] = "Oficina";
             }
-            if($inmueble->box_Estructura!=0){
-                $property["services"][]="Finca Regia";
+            if ($inmueble->box_Estructura != 0) {
+                $property["services"][] = "Finca Regia";
             }
-            if($inmueble->box_Cubierta!=1){
-                $property["services"][]="Diáfana";
+            if ($inmueble->box_Cubierta != 1) {
+                $property["services"][] = "Diáfana";
             }
-            if($inmueble->box_Divisiones!=0){
-                $property["services"][]="Divisiones";
+            if ($inmueble->box_Divisiones != 0) {
+                $property["services"][] = "Divisiones";
             }
-            if($inmueble->box_Escaparate!=0){
-                $property["services"][]="Escaparate";
+            if ($inmueble->box_Escaparate != 0) {
+                $property["services"][] = "Escaparate";
             }
 
-            if(isset($inmueble->Medias->Fotos->Foto[0])) {
+            if (isset($inmueble->Medias->Fotos->Foto[0])) {
                 $property["image"] = trim($inmueble->Medias->Fotos->Foto[0]->__toString());
                 foreach ($inmueble->Medias->Fotos->Foto as $image) {
                     $property["gallery"][] = trim($image->__toString());
@@ -137,7 +150,7 @@ class HabitatsoftXmlService
 
             $properties[] = $property;
         }
-
+        
         return $properties;
     }
 
@@ -176,7 +189,7 @@ class HabitatsoftXmlService
     private function getOperation(\SimpleXMLElement $inmueble): string
     {
         $operation = "alquiler";
-        if($inmueble->LanguageData->Language->txt_NombreOperacion->__toString() == "en venta") {
+        if ($inmueble->LanguageData->Language->txt_NombreOperacion->__toString() == "en venta") {
             $operation = "venta";
         }
         return $operation;

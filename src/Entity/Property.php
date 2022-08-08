@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\Translatable\Translatable;
 
 #[ORM\Entity(repositoryClass: PropertyRepository::class)]
 #[ORM\InheritanceType(value: "SINGLE_TABLE")]
@@ -88,17 +89,29 @@ class Property
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     protected ?\DateTimeInterface $updatedAt = null;
 
+    #[Gedmo\Translatable]
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    protected ?string $name = null;
 
     #[ORM\ManyToOne]
-    private ?Location $province = null;
+    protected ?Location $province = null;
 
     #[ORM\ManyToOne]
-    private ?Location $town = null;
+    protected ?Location $town = null;
 
     #[ORM\ManyToOne]
-    private ?Location $zone = null;
+    protected ?Location $zone = null;
+
+    #[Gedmo\Translatable]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    protected ?string $body = null;
+
+    /**
+     * Used locale to override Translation listener`s locale
+     * this is not a mapped field of entity metadata, just a simple property
+     */
+    #[Gedmo\Locale]
+    protected $locale;
 
     public function __construct()
     {
@@ -395,6 +408,23 @@ class Property
     public function setZone(?Location $zone): self
     {
         $this->zone = $zone;
+
+        return $this;
+    }
+
+    public function setTranslatableLocale($locale)
+    {
+        $this->locale = $locale;
+    }
+
+    public function getBody(): ?string
+    {
+        return $this->body;
+    }
+
+    public function setBody(?string $body): self
+    {
+        $this->body = $body;
 
         return $this;
     }

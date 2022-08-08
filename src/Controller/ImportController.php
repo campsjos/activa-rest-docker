@@ -38,6 +38,7 @@ class ImportController extends AbstractController
 
         $properties = [];
         $rawProperties = $this->hsXmlService->getProperties($type);
+
         $propertyClass = "";
         switch ($type) {
             case Property::TYPE_WAREHOUSE:
@@ -56,7 +57,7 @@ class ImportController extends AbstractController
 
         foreach ($rawProperties as $rawProperty) {
             $property = $this->em->getRepository($propertyClass)->findOneBy(['reference' => $rawProperty["reference"]]);
-            if(!$property) {
+            if (!$property) {
                 /** @var Office|Warehouse|Local|Residence */
                 $property = new $propertyClass;
                 $property->setReference($rawProperty['reference']);
@@ -72,10 +73,10 @@ class ImportController extends AbstractController
                 $property->setPrice($rawProperty['price']);
                 $property->setPriceSqm($rawProperty['priceSqm']);
                 $property->setArea($rawProperty['area']);
-                
+
                 $services = $this->em->getRepository(Service::class)->findBy(['name' => $rawProperty["services"]]);
                 $property->setServices($services);
-                
+
                 $province = $this->em->getRepository(Location::class)->findFirstLevelByName($rawProperty["province"]);
                 $town = $this->em->getRepository(Location::class)->findOneBy(['name' => $rawProperty['town'], 'parent' => $province]);
                 $zone = $this->em->getRepository(Location::class)->findOneBy(['name' => $rawProperty['zone'], 'parent' => $town]);
@@ -83,13 +84,24 @@ class ImportController extends AbstractController
                 $property->setTown($town);
                 $property->setZone($zone);
 
+                $translationRep = $this->em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
+                $translationRep
+                    ->translate($property, 'name', 'es', $rawProperty['translations']['es']['title'])
+                    ->translate($property, 'name', 'ca', $rawProperty['translations']['ct']['title'])
+                    ->translate($property, 'name', 'en', $rawProperty['translations']['en']['title'])
+                    ->translate($property, 'name', 'fr', $rawProperty['translations']['fr']['title'])
+                    ->translate($property, 'body', 'es', $rawProperty['translations']['es']['body'])
+                    ->translate($property, 'body', 'ca', $rawProperty['translations']['ct']['body'])
+                    ->translate($property, 'body', 'en', $rawProperty['translations']['en']['body'])
+                    ->translate($property, 'body', 'fr', $rawProperty['translations']['fr']['body']);
+
                 $this->em->persist($property);
             }
 
-            dump($property);
-
+            
             $properties[] = $property;
         }
+        dump($property);
 
         return $this->render('import/properties.html.twig', [
             'properties' => $properties,
