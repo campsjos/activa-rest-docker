@@ -7,6 +7,7 @@ use App\Repository\ServiceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\Translatable\Translatable;
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 #[ApiResource]
@@ -21,11 +22,19 @@ class Service
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
+    #[Gedmo\Translatable]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::SIMPLE_ARRAY)]
     private array $types = [];
+
+    /**
+     * Used locale to override Translation listener`s locale
+     * this is not a mapped field of entity metadata, just a simple property
+     */
+    #[Gedmo\Locale]
+    protected $locale;
 
     public function getId(): ?int
     {
@@ -73,5 +82,10 @@ class Service
     public function __toString(): string
     {
         return $this->getName();
+    }
+
+    public function setTranslatableLocale($locale)
+    {
+        $this->locale = $locale;
     }
 }

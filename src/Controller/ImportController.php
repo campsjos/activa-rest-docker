@@ -101,7 +101,6 @@ class ImportController extends AbstractController
             
             $properties[] = $property;
         }
-        dump($property);
 
         return $this->render('import/properties.html.twig', [
             'properties' => $properties,
@@ -196,38 +195,80 @@ class ImportController extends AbstractController
     #[Route('/import/services', name: 'app_import_services')]
     public function importServices(): Response
     {
+        $translationRep = $this->em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
+        
         $muelle = new Service();
-        $muelle->setName("Muelle");
+        $translationRep
+            ->translate($muelle, 'name', 'es', 'Muelle de carga')
+            ->translate($muelle, 'name', 'ca', 'Moll de càrrega')
+            ->translate($muelle, 'name', 'en', 'Loading bay')
+            ->translate($muelle, 'name', 'fr', 'Quai de chargement')
+            ;
         $muelle->addType(Property::TYPE_WAREHOUSE);
 
         $puenteGrua = new Service();
-        $puenteGrua->setName("Puente Grúa");
+        $translationRep
+            ->translate($puenteGrua, 'name', 'es', 'Puente Grúa')
+            ->translate($puenteGrua, 'name', 'ca', 'Pont Grúa')
+            ->translate($puenteGrua, 'name', 'en', 'Bridge Crane')
+            ->translate($puenteGrua, 'name', 'fr', 'Pont Roulant')
+            ;
         $puenteGrua->addType(Property::TYPE_WAREHOUSE);
 
         $antiincendios = new Service();
-        $antiincendios->setName("Antiincendios");
+        $translationRep
+            ->translate($antiincendios, 'name', 'es', 'Antiincendios')
+            ->translate($antiincendios, 'name', 'ca', 'Antiincendis')
+            ->translate($antiincendios, 'name', 'en', 'Fire system')
+            ->translate($antiincendios, 'name', 'fr', 'Système d\'incendie')
+            ;
         $antiincendios->addType(Property::TYPE_WAREHOUSE);
 
         $oficina = new Service();
-        $oficina->setName("Oficina");
+        $translationRep
+            ->translate($oficina, 'name', 'es', 'Oficina')
+            ->translate($oficina, 'name', 'ca', 'Oficina')
+            ->translate($oficina, 'name', 'en', 'Office')
+            ->translate($oficina, 'name', 'fr', 'Bureau')
+            ;
         $oficina->addType(Property::TYPE_WAREHOUSE);
 
         $diafana = new Service();
-        $diafana->setName("Diáfana");
+        $translationRep
+            ->translate($diafana, 'name', 'es', 'Diafana')
+            ->translate($diafana, 'name', 'ca', 'Diàfana')
+            ->translate($diafana, 'name', 'en', 'Diaphanous')
+            ->translate($diafana, 'name', 'fr', 'Diaphane')
+            ;
         $diafana->addType(Property::TYPE_OFFICE);
         $diafana->addType(Property::TYPE_LOCAL);
 
         $divisiones = new Service();
-        $divisiones->setName("Divisiones");
+        $translationRep
+            ->translate($divisiones, 'name', 'es', 'Divisiones')
+            ->translate($divisiones, 'name', 'ca', 'Divisions')
+            ->translate($divisiones, 'name', 'en', 'Divisions')
+            ->translate($divisiones, 'name', 'fr', 'Divisions')
+            ;
         $divisiones->addType(Property::TYPE_OFFICE);
         $divisiones->addType(Property::TYPE_LOCAL);
 
         $fincaRegia = new Service();
-        $fincaRegia->setName("Finca Regia");
+        $translationRep
+            ->translate($fincaRegia, 'name', 'es', 'Finca Régia')
+            ->translate($fincaRegia, 'name', 'ca', 'Finca Règia')
+            ->translate($fincaRegia, 'name', 'en', 'Regal State')
+            ->translate($fincaRegia, 'name', 'fr', 'Domaine Royal')
+            ;
         $fincaRegia->addType(Property::TYPE_OFFICE);
 
         $escaparate = new Service();
-        $escaparate->setName("Escaparate");
+        $translationRep
+            ->translate($escaparate, 'name', 'es', 'Escaparate')
+            ->translate($escaparate, 'name', 'ca', 'Aparador')
+            ->translate($escaparate, 'name', 'en', 'Showcase')
+            ->translate($escaparate, 'name', 'fr', 'Vitrine')
+            ;
         $escaparate->addType(Property::TYPE_LOCAL);
 
         $this->em->persist($muelle);
