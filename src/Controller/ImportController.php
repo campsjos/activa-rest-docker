@@ -32,9 +32,7 @@ class ImportController extends AbstractController
     public function importProperties(string $type): Response
     {
 
-        // TODO: Add translations
         // TODO: Remove non existent Properties
-        // TODO: Flush entities
 
         $properties = [];
         $rawProperties = $this->hsXmlService->getProperties($type);
@@ -97,11 +95,12 @@ class ImportController extends AbstractController
 
                 $this->em->persist($property);
             }
-
+            
             
             $properties[] = $property;
         }
-
+        
+        $this->em->flush();
         return $this->render('import/properties.html.twig', [
             'properties' => $properties,
         ]);
