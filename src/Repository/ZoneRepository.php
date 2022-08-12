@@ -50,22 +50,18 @@ class ZoneRepository extends ServiceEntityRepository
     {
         if (!$parentId) return null;
 
-        $conn = $this->getEntityManager()->getConnection();
+        $em = $this->getEntityManager();
 
-        $sql = '
-            SELECT * FROM property p
-            WHERE p.town_id = :parent_id
-            LIMIT 1
+        $dql = '
+            SELECT z FROM ' . Zone::class . ' z
+            WHERE z.town = :parent_id
+            AND z.name = :name
             ';
-        $stmt = $conn->prepare($sql);
-        $resultSet = $stmt->executeQuery(['parent_id' => $parentId]);
-
-        $result = $resultSet->fetchOne();
-    
-        if(!$result) {
-            $result = null;
-        }
-        return $result;
+        return $em->createQuery($dql)
+            ->setParameter('parent_id', $parentId)
+            ->setParameter('name', $name)
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
     }
 
     //    /**

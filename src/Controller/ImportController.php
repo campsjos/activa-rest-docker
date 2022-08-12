@@ -36,9 +36,7 @@ class ImportController extends AbstractController
     #[Route('/import/properties/{type}', name: 'app_import_properties')]
     public function importProperties(string $type): JsonResponse
     {
-
-        // TODO: Remove non existent Properties
-
+        // TODO: Use Mercure to notificate steps
         $properties = [];
         $rawProperties = $this->hsXmlService->getProperties($type);
 
@@ -88,8 +86,8 @@ class ImportController extends AbstractController
                 $property->setTown($town);
                 $property->setZone($zone);
 
-                $parentSituation = $this->em->getRepository(Situation::class)->findBy(['name' => $rawProperty['situation1']]);
-                $childSituation = $this->em->getRepository(Situation::class)->findBy(['name' => $rawProperty['situation2']]);
+                $parentSituation = $this->em->getRepository(Situation::class)->findOneBy(['name' => $rawProperty['situation1']]);
+                $childSituation = $this->em->getRepository(Situation::class)->findOneBy(['name' => $rawProperty['situation2']]);
                 $property->setSituationParent($parentSituation);
                 $property->setSituationChild($childSituation);
 
@@ -207,6 +205,14 @@ class ImportController extends AbstractController
     #[Route('/import/services', name: 'app_import_services')]
     public function importServices(): JsonResponse
     {
+        $services = $this->em->getRepository(Service::class)->findAll();
+
+        if(count($services) > 0) {
+            return $this->json([
+                'services' => $services,
+            ]);
+        }
+
         $translationRep = $this->em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
 
         $muelle = new Service();

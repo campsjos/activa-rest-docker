@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Property;
 use App\Entity\Town;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -50,22 +51,18 @@ class TownRepository extends ServiceEntityRepository
     {
         if (!$parentId) return null;
 
-        $conn = $this->getEntityManager()->getConnection();
+        $em = $this->getEntityManager();
 
-        $sql = '
-            SELECT * FROM property p
-            WHERE p.province_id = :parent_id
-            LIMIT 1
+        $dql = '
+            SELECT t FROM ' . Town::class . ' t
+            WHERE t.province = :parent_id
+            AND t.name = :name
             ';
-        $stmt = $conn->prepare($sql);
-        $resultSet = $stmt->executeQuery(['parent_id' => $parentId]);
-
-        $result = $resultSet->fetchOne();
-    
-        if(!$result) {
-            $result = null;
-        }
-        return $result;
+        return $em->createQuery($dql)
+            ->setParameter('parent_id', $parentId)
+            ->setParameter('name', $name)
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
     }
 
     //    /**
