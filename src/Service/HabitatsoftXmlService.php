@@ -7,7 +7,7 @@ use App\Entity\Property;
 class HabitatsoftXmlService
 {
     private $staticUrl = "";
-    private $fileName = "4385.xml";
+    private $fileName = "4385_test.xml";
     private const ACCOUNT_ID = "4385";
 
     public function __construct(string $staticAssetsUrl)
@@ -71,6 +71,16 @@ class HabitatsoftXmlService
         return $categories;
     }
 
+    public function getPropertyReferences(): array
+    {
+        $references = [];
+        $inmuebles = $this->loadXml();
+        foreach ($inmuebles->Inmueble as $inmueble) {
+            $references[] = $inmueble->NumeroExpediente->__toString();
+        }
+        return $references;
+    }
+
     public function getProperties(string $type): array
     {
         $properties = [];
@@ -82,6 +92,8 @@ class HabitatsoftXmlService
                 "address" => $inmueble->TipoCalle->__toString() . " " . $inmueble->NombreCalleInmueble->__toString() . " " . $inmueble->TipoNumero->__toString() . " " . $inmueble->NumeroCalleInmueble->__toString(),
                 "postalCode" => $inmueble->CodigoPostal->__toString(),
                 "province" => $inmueble->NombreProvincia->__toString(),
+                "situation1" => $inmueble->Situacion1->__toString(),
+                "situation2" => $inmueble->Situacion2->__toString(),
                 "town" => $inmueble->NombreMunicipio->__toString(),
                 "zone" => $inmueble->NombreZona->__toString(),
                 "latitude" => $inmueble->Latitud->__toString(),

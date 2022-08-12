@@ -29,9 +29,17 @@ class Situation
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     private Collection $situations;
 
+    #[ORM\OneToMany(mappedBy: 'situationParent', targetEntity: Property::class)]
+    private Collection $parentProperties;
+
+    #[ORM\OneToMany(mappedBy: 'situationChild', targetEntity: Property::class)]
+    private Collection $childProperties;
+
     public function __construct()
     {
         $this->situations = new ArrayCollection();
+        $this->parentProperties = new ArrayCollection();
+        $this->childProperties = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -107,5 +115,65 @@ class Situation
         }
 
         return null;
+    }
+
+    /**
+     * @return Collection<int, Property>
+     */
+    public function getParentProperties(): Collection
+    {
+        return $this->parentProperties;
+    }
+
+    public function addParentProperty(Property $childProperty): self
+    {
+        if (!$this->parentProperties->contains($childProperty)) {
+            $this->parentProperties->add($childProperty);
+            $childProperty->setSituationParent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeParentProperty(Property $childProperty): self
+    {
+        if ($this->parentProperties->removeElement($childProperty)) {
+            // set the owning side to null (unless already changed)
+            if ($childProperty->getSituationParent() === $this) {
+                $childProperty->setSituationParent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Property>
+     */
+    public function getChildProperties(): Collection
+    {
+        return $this->childProperties;
+    }
+
+    public function addChildProperty(Property $childProperty): self
+    {
+        if (!$this->childProperties->contains($childProperty)) {
+            $this->childProperties->add($childProperty);
+            $childProperty->setSituationChild($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChildProperty(Property $childProperty): self
+    {
+        if ($this->childProperties->removeElement($childProperty)) {
+            // set the owning side to null (unless already changed)
+            if ($childProperty->getSituationChild() === $this) {
+                $childProperty->setSituationChild(null);
+            }
+        }
+
+        return $this;
     }
 }

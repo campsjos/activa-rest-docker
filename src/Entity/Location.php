@@ -5,12 +5,18 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\LocationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
+#[ORM\InheritanceType(value: "SINGLE_TABLE")]
+#[ORM\DiscriminatorColumn(name: "type", type: "string")]
+#[ORM\DiscriminatorMap(value: [
+    'province' => 'Province',
+    'town' => 'Town',
+    'zone' => 'Zone',
+])]
 #[ApiResource]
 class Location
 {
@@ -25,12 +31,6 @@ class Location
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
-
-    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'locations')]
-    private ?self $parent = null;
-
-    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
-    private Collection $locations;
 
     #[ORM\Column(type: Types::SIMPLE_ARRAY)]
     private array $types = [];
@@ -62,64 +62,6 @@ class Location
         return $this;
     }
 
-    public function getParent(): ?self
-    {
-        return $this->parent;
-    }
-
-    public function setParent(?self $parent): self
-    {
-        $this->parent = $parent;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, self>
-     */
-    public function getLocations(): Collection
-    {
-        return $this->locations;
-    }
-
-    public function addLocation(self $location): self
-    {
-        if (!$this->locations->contains($location)) {
-            $this->locations->add($location);
-            $location->setParent($this);
-        }
-
-        return $this;
-    }
-
-    public function removeLocation(self $location): self
-    {
-        if ($this->locations->removeElement($location)) {
-            // set the owning side to null (unless already changed)
-            if ($location->getParent() === $this) {
-                $location->setParent(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function getChildByName(string $name): ?Location
-    {
-        foreach ($this->locations as $location) {
-            if ($name === $location->getName()) {
-                return $location;
-            }
-        }
-
-        return null;
-    }
-
-    public function __toString(): string
-    {
-        return $this->getName();
-    }
-
     public function getTypes(): array
     {
         return $this->types;
@@ -134,11 +76,15 @@ class Location
 
     public function addType(string $type): self
     {
-        if(!in_array($type, $this->types)) {
+        if (!in_array($type, $this->types)) {
             $this->types[] = $type;
         }
 
         return $this;
     }
 
+    public function __toString(): string
+    {
+        return $this->getName();
+    }
 }

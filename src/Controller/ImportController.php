@@ -6,14 +6,19 @@ use App\Entity\Local;
 use App\Entity\Location;
 use App\Entity\Office;
 use App\Entity\Property;
+use App\Entity\Province;
 use App\Entity\Residence;
 use App\Entity\Service;
 use App\Entity\Situation;
+use App\Entity\Town;
 use App\Entity\Warehouse;
+use App\Entity\Zone;
 use App\Service\HabitatsoftXmlService;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -29,7 +34,7 @@ class ImportController extends AbstractController
     }
 
     #[Route('/import/properties/{type}', name: 'app_import_properties')]
-    public function importProperties(string $type): Response
+    public function importProperties(string $type): JsonResponse
     {
 
         // TODO: Remove non existent Properties
@@ -75,12 +80,18 @@ class ImportController extends AbstractController
                 $services = $this->em->getRepository(Service::class)->findBy(['name' => $rawProperty["services"]]);
                 $property->setServices($services);
 
-                $province = $this->em->getRepository(Location::class)->findFirstLevelByName($rawProperty["province"]);
-                $town = $this->em->getRepository(Location::class)->findOneBy(['name' => $rawProperty['town'], 'parent' => $province]);
-                $zone = $this->em->getRepository(Location::class)->findOneBy(['name' => $rawProperty['zone'], 'parent' => $town]);
+                $province = $this->em->getRepository(Province::class)->findOneBy(["name" => $rawProperty["province"]]);
+                $town = $province->findTownByName($rawProperty['town']);
+                $zone = $town->findZoneByName($rawProperty['zone']);
+
                 $property->setProvince($province);
                 $property->setTown($town);
                 $property->setZone($zone);
+
+                $parentSituation = $this->em->getRepository(Situation::class)->findBy(['name' => $rawProperty['situation1']]);
+                $childSituation = $this->em->getRepository(Situation::class)->findBy(['name' => $rawProperty['situation2']]);
+                $property->setSituationParent($parentSituation);
+                $property->setSituationChild($childSituation);
 
                 $translationRep = $this->em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
                 $translationRep
@@ -95,19 +106,18 @@ class ImportController extends AbstractController
 
                 $this->em->persist($property);
             }
-            
-            
-            $properties[] = $property;
+
+            $properties[] = $property->getReference();
         }
-        
+
         $this->em->flush();
-        return $this->render('import/properties.html.twig', [
+        return $this->json([
             'properties' => $properties,
         ]);
     }
 
     #[Route('/import/situations', name: 'app_import_situations')]
-    public function importSituations(): Response
+    public function importSituations(): JsonResponse
     {
         $rawSituations = $this->hsXmlService->getSituations();
         $situations = [];
@@ -128,81 +138,83 @@ class ImportController extends AbstractController
 
                 $situation->addSituation($situationChild);
             }
-            $situations[] = $situation;
+            $situations[] = $situation->getName();
             $this->em->persist($situation);
         }
 
         $this->em->flush();
 
-        return $this->render('import/situations.html.twig', [
+        return $this->json([
             'situations' => $situations,
         ]);
     }
 
     #[Route('/import/locations/{type}', name: 'app_import_locations')]
-    public function importLocations(string $type): Response
+    public function importLocations(string $type): JsonResponse
     {
         $rawLocations = $this->hsXmlService->getLocations($type);
         $locations = [];
 
-        foreach ($rawLocations as $locationName => $locationChildren) {
-            /** @var Location */
-            $location = $this->em->getRepository(Location::class)->findOneBy(['name' => $locationName]);
-            if (!$location) {
-                $location = new Location();
+        foreach ($rawLocations as $provinceName => $towns) {
+            /** @var Province */
+            $province = $this->em->getRepository(Province::class)->findOneBy(['name' => $provinceName]);
+            if (!$province) {
+                $province = new Province();
             }
-            $location->setName($locationName);
-            $location->addType($type);
-            foreach ($locationChildren as $childName => $grandChildren) {
-                $locationChild = $location->getChildByName($childName);
+            $province->setName($provinceName);
+            $province->addType($type);
+            $this->em->persist($province);
+            foreach ($towns as $townName => $zones) {
+                /** @var Town */
+                $town = $this->em->getRepository(Town::class)->findByNameAndParent($townName, $province->getId());
 
-                if (!$locationChild) {
-                    $locationChild = new Location();
-                    $locationChild->setName($childName);
+                if (!$town) {
+                    $town = new Town();
+                    $town->setName($townName);
                 }
 
-                $locationChild->addType($type);
-                $this->em->persist($locationChild);
+                $town->addType($type);
+                $this->em->persist($town);
 
-                $location->addLocation($locationChild);
+                $province->addTown($town);
 
-                foreach ($grandChildren as $grandChildName) {
-                    $locationGrandChild = $locationChild->getChildByName($grandChildName);
+                foreach ($zones as $zoneName) {
+                    /** @var Zone */
+                    $zone = $this->em->getRepository(Zone::class)->findByNameAndParent($townName, $town->getId());
 
-                    if (!$locationGrandChild) {
-                        $locationGrandChild = new Location();
-                        $locationGrandChild->setName($grandChildName);
+                    if (!$zone) {
+                        $zone = new Zone();
+                        $zone->setName($zoneName);
                     }
 
-                    $locationGrandChild->addType($type);
-                    $this->em->persist($locationGrandChild);
+                    $zone->addType($type);
+                    $this->em->persist($zone);
 
-                    $locationChild->addLocation($locationGrandChild);
+                    $town->addZone($zone);
                 }
             }
-            $locations[] = $location;
-            $this->em->persist($location);
+            $locations[] = $province;
+            $this->em->persist($province);
         }
 
         $this->em->flush();
 
-        return $this->render('import/locations.html.twig', [
+        return $this->json([
             'locations' => $locations,
         ]);
     }
 
     #[Route('/import/services', name: 'app_import_services')]
-    public function importServices(): Response
+    public function importServices(): JsonResponse
     {
         $translationRep = $this->em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
-        
+
         $muelle = new Service();
         $translationRep
             ->translate($muelle, 'name', 'es', 'Muelle de carga')
             ->translate($muelle, 'name', 'ca', 'Moll de càrrega')
             ->translate($muelle, 'name', 'en', 'Loading bay')
-            ->translate($muelle, 'name', 'fr', 'Quai de chargement')
-            ;
+            ->translate($muelle, 'name', 'fr', 'Quai de chargement');
         $muelle->addType(Property::TYPE_WAREHOUSE);
 
         $puenteGrua = new Service();
@@ -210,8 +222,7 @@ class ImportController extends AbstractController
             ->translate($puenteGrua, 'name', 'es', 'Puente Grúa')
             ->translate($puenteGrua, 'name', 'ca', 'Pont Grúa')
             ->translate($puenteGrua, 'name', 'en', 'Bridge Crane')
-            ->translate($puenteGrua, 'name', 'fr', 'Pont Roulant')
-            ;
+            ->translate($puenteGrua, 'name', 'fr', 'Pont Roulant');
         $puenteGrua->addType(Property::TYPE_WAREHOUSE);
 
         $antiincendios = new Service();
@@ -219,8 +230,7 @@ class ImportController extends AbstractController
             ->translate($antiincendios, 'name', 'es', 'Antiincendios')
             ->translate($antiincendios, 'name', 'ca', 'Antiincendis')
             ->translate($antiincendios, 'name', 'en', 'Fire system')
-            ->translate($antiincendios, 'name', 'fr', 'Système d\'incendie')
-            ;
+            ->translate($antiincendios, 'name', 'fr', 'Système d\'incendie');
         $antiincendios->addType(Property::TYPE_WAREHOUSE);
 
         $oficina = new Service();
@@ -228,8 +238,7 @@ class ImportController extends AbstractController
             ->translate($oficina, 'name', 'es', 'Oficina')
             ->translate($oficina, 'name', 'ca', 'Oficina')
             ->translate($oficina, 'name', 'en', 'Office')
-            ->translate($oficina, 'name', 'fr', 'Bureau')
-            ;
+            ->translate($oficina, 'name', 'fr', 'Bureau');
         $oficina->addType(Property::TYPE_WAREHOUSE);
 
         $diafana = new Service();
@@ -237,8 +246,7 @@ class ImportController extends AbstractController
             ->translate($diafana, 'name', 'es', 'Diafana')
             ->translate($diafana, 'name', 'ca', 'Diàfana')
             ->translate($diafana, 'name', 'en', 'Diaphanous')
-            ->translate($diafana, 'name', 'fr', 'Diaphane')
-            ;
+            ->translate($diafana, 'name', 'fr', 'Diaphane');
         $diafana->addType(Property::TYPE_OFFICE);
         $diafana->addType(Property::TYPE_LOCAL);
 
@@ -247,8 +255,7 @@ class ImportController extends AbstractController
             ->translate($divisiones, 'name', 'es', 'Divisiones')
             ->translate($divisiones, 'name', 'ca', 'Divisions')
             ->translate($divisiones, 'name', 'en', 'Divisions')
-            ->translate($divisiones, 'name', 'fr', 'Divisions')
-            ;
+            ->translate($divisiones, 'name', 'fr', 'Divisions');
         $divisiones->addType(Property::TYPE_OFFICE);
         $divisiones->addType(Property::TYPE_LOCAL);
 
@@ -257,8 +264,7 @@ class ImportController extends AbstractController
             ->translate($fincaRegia, 'name', 'es', 'Finca Régia')
             ->translate($fincaRegia, 'name', 'ca', 'Finca Règia')
             ->translate($fincaRegia, 'name', 'en', 'Regal State')
-            ->translate($fincaRegia, 'name', 'fr', 'Domaine Royal')
-            ;
+            ->translate($fincaRegia, 'name', 'fr', 'Domaine Royal');
         $fincaRegia->addType(Property::TYPE_OFFICE);
 
         $escaparate = new Service();
@@ -266,8 +272,7 @@ class ImportController extends AbstractController
             ->translate($escaparate, 'name', 'es', 'Escaparate')
             ->translate($escaparate, 'name', 'ca', 'Aparador')
             ->translate($escaparate, 'name', 'en', 'Showcase')
-            ->translate($escaparate, 'name', 'fr', 'Vitrine')
-            ;
+            ->translate($escaparate, 'name', 'fr', 'Vitrine');
         $escaparate->addType(Property::TYPE_LOCAL);
 
         $this->em->persist($muelle);
@@ -284,18 +289,84 @@ class ImportController extends AbstractController
         /** @var Service[] */
         $services = $this->em->getRepository(Service::class)->findAll();
 
-        return $this->render('import/services.html.twig', [
+        return $this->json([
             'services' => $services,
         ]);
     }
 
     // Don't import categories until data is normalized by client
     #[Route('/import/categories', name: 'app_import_categories')]
-    public function importCategories(): Response
+    public function importCategories(): JsonResponse
     {
         $categories = $this->hsXmlService->getCategories();
-        return $this->render('import/categories.html.twig', [
+        return $this->json([
             'categories' => $categories,
+        ]);
+    }
+
+    #[Route('/import/clean/properties', name: 'app_import_clean_properties')]
+    public function cleanProperties(): JsonResponse
+    {
+        $references = $this->hsXmlService->getPropertyReferences();
+        $removedRows = $this->em->getRepository(Property::class)->deleteByNotPresentInReferences($references);
+
+        return $this->json([
+            'removedRows' => $removedRows
+        ]);
+    }
+
+    #[Route('/import/clean/locations', name: 'app_import_clean_locations')]
+    public function cleanLocations(): JsonResponse
+    {
+        $removedRows = 0;
+        $provinces = $this->em->getRepository(Province::class)->findAll();
+        $removedRows += $this->removeLocationIfHasNoProperties($provinces);
+
+        $towns = $this->em->getRepository(Town::class)->findAll();
+        $removedRows += $this->removeLocationIfHasNoProperties($towns);
+
+        $zones = $this->em->getRepository(Zone::class)->findAll();
+        $removedRows += $this->removeLocationIfHasNoProperties($zones);
+
+        return $this->json([
+            'removedRows' => $removedRows
+        ]);
+    }
+
+    /**
+     * Removes locations if doesn't relate to any property
+     *
+     * @param array $locations
+     * @return integer
+     */
+    private function removeLocationIfHasNoProperties(array $locations): int
+    {
+        $removedRows = 0;
+        foreach ($locations as $location) {
+            if ($location->getProperties()->count() === 0) {
+                $this->em->remove($location);
+                $removedRows++;
+            }
+        }
+        $this->em->flush();
+        return $removedRows;
+    }
+
+    #[Route('/import/clean/situations', name: 'app_import_clean_situations')]
+    public function cleanSituations(): JsonResponse
+    {
+        $removedRows = 0;
+        /** @var ?Collection<int, Situation> */
+        $situations = $this->em->getRepository(Situation::class)->findAll();
+        foreach ($situations as $situation) {
+            if ($situation->getParentProperties()->count() === 0 && $situation->getChildProperties()->count() === 0) {
+                $this->em->remove($situation);
+                $removedRows++;
+            }
+        }
+
+        return $this->json([
+            'removedRows' => $removedRows
         ]);
     }
 }

@@ -76,9 +76,6 @@ class Property
     protected ?string $area = null;
 
     #[ORM\ManyToOne]
-    protected ?Location $location = null;
-
-    #[ORM\ManyToOne]
     protected ?Category $category = null;
 
     #[Gedmo\Timestampable(on: "create")]
@@ -93,15 +90,6 @@ class Property
     #[ORM\Column(length: 255)]
     protected ?string $name = null;
 
-    #[ORM\ManyToOne]
-    protected ?Location $province = null;
-
-    #[ORM\ManyToOne]
-    protected ?Location $town = null;
-
-    #[ORM\ManyToOne]
-    protected ?Location $zone = null;
-
     #[Gedmo\Translatable]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     protected ?string $body = null;
@@ -112,6 +100,21 @@ class Property
      */
     #[Gedmo\Locale]
     protected $locale;
+
+    #[ORM\ManyToOne(inversedBy: 'properties')]
+    private ?Province $province = null;
+
+    #[ORM\ManyToOne(inversedBy: 'properties')]
+    private ?Town $town = null;
+
+    #[ORM\ManyToOne(inversedBy: 'properties')]
+    private ?Zone $zone = null;
+
+    #[ORM\ManyToOne(inversedBy: 'parentProperties')]
+    private ?Situation $situationParent = null;
+
+    #[ORM\ManyToOne(inversedBy: 'childProperties')]
+    private ?Situation $situationChild = null;
 
     public function __construct()
     {
@@ -316,18 +319,6 @@ class Property
         return $this;
     }
 
-    public function getLocation(): ?Location
-    {
-        return $this->location;
-    }
-
-    public function setLocation(?Location $location): self
-    {
-        $this->location = $location;
-
-        return $this;
-    }
-
     public function getCategory(): ?Category
     {
         return $this->category;
@@ -376,42 +367,6 @@ class Property
         return $this;
     }
 
-    public function getProvince(): ?Location
-    {
-        return $this->province;
-    }
-
-    public function setProvince(?Location $province): self
-    {
-        $this->province = $province;
-
-        return $this;
-    }
-
-    public function getTown(): ?Location
-    {
-        return $this->town;
-    }
-
-    public function setTown(?Location $town): self
-    {
-        $this->town = $town;
-
-        return $this;
-    }
-
-    public function getZone(): ?Location
-    {
-        return $this->zone;
-    }
-
-    public function setZone(?Location $zone): self
-    {
-        $this->zone = $zone;
-
-        return $this;
-    }
-
     public function setTranslatableLocale($locale)
     {
         $this->locale = $locale;
@@ -425,6 +380,66 @@ class Property
     public function setBody(?string $body): self
     {
         $this->body = $body;
+
+        return $this;
+    }
+
+    public function getProvince(): ?Province
+    {
+        return $this->province;
+    }
+
+    public function setProvince(?Province $province): self
+    {
+        $this->province = $province;
+
+        return $this;
+    }
+
+    public function getTown(): ?Town
+    {
+        return $this->town;
+    }
+
+    public function setTown(?Town $town): self
+    {
+        $this->town = $town;
+
+        return $this;
+    }
+
+    public function getZone(): ?Zone
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?Zone $zone): self
+    {
+        $this->zone = $zone;
+
+        return $this;
+    }
+
+    public function getSituationParent(): ?Situation
+    {
+        return $this->situationParent;
+    }
+
+    public function setSituationParent(?Situation $situationParent): self
+    {
+        $this->situationParent = $situationParent;
+
+        return $this;
+    }
+
+    public function getSituationChild(): ?Situation
+    {
+        return $this->situationChild;
+    }
+
+    public function setSituationChild(?Situation $situationChild): self
+    {
+        $this->situationChild = $situationChild;
 
         return $this;
     }

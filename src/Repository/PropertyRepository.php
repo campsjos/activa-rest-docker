@@ -39,6 +39,21 @@ class PropertyRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param array<string> Array of property references 
+     * @return int Return the number of removed rows
+     */
+    public function deleteByNotPresentInReferences(array $references) {
+        $qb = $this->createQueryBuilder('p');
+        $query = $qb 
+            ->delete()
+            ->where($qb->expr()->notIn('p.reference', ':references'))
+            ->setParameter(':references', $references)
+            ->getQuery()
+            ;
+        return $query->execute();
+    }
+
 //    /**
 //     * @return Property[] Returns an array of Property objects
 //     */
