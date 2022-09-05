@@ -20,17 +20,24 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ImportController extends AbstractController
 {
     private HabitatsoftXmlService $hsXmlService;
     private ObjectManager $em;
+    private HubInterface $hub;
 
-    public function __construct(HabitatsoftXmlService $hsXmlService, ManagerRegistry $doctrine)
-    {
+    public function __construct(
+        HabitatsoftXmlService $hsXmlService,
+        ManagerRegistry $doctrine,
+        HubInterface $hub
+    ) {
         $this->hsXmlService = $hsXmlService;
         $this->em = $doctrine->getManager();
+        $this->hub = $hub;
     }
 
     #[Route('/import/properties/{type}', name: 'app_import_properties')]
@@ -38,7 +45,6 @@ class ImportController extends AbstractController
     {
         // TODO: Use Mercure to notificate steps
         $properties = [];
-        $rawProperties = $this->hsXmlService->getProperties($type);
 
         $propertyClass = "";
         switch ($type) {
@@ -55,6 +61,13 @@ class ImportController extends AbstractController
                 $propertyClass = Residence::class;
                 break;
         }
+        $this->sendFirstUpdate($propertyClass);
+
+        $rawProperties = $this->hsXmlService->getProperties($type);
+
+        $total = count($rawProperties);
+        $progress = 0;
+        $this->sendUpdate($propertyClass, $total, $progress);
 
         foreach ($rawProperties as $rawProperty) {
             $property = $this->em->getRepository($propertyClass)->findOneBy(['reference' => $rawProperty["reference"]]);
@@ -105,6 +118,9 @@ class ImportController extends AbstractController
                 $this->em->persist($property);
             }
 
+            $progress++;
+            $this->sendUpdate($propertyClass, $total, $progress);
+
             $properties[] = $property->getReference();
         }
 
@@ -117,8 +133,14 @@ class ImportController extends AbstractController
     #[Route('/import/situations', name: 'app_import_situations')]
     public function importSituations(): JsonResponse
     {
+        $this->sendFirstUpdate(Location::class);
+
         $rawSituations = $this->hsXmlService->getSituations();
         $situations = [];
+
+        $total = count($rawSituations);
+        $progress = 0;
+        $this->sendUpdate(Location::class, $total, $progress);
 
         foreach ($rawSituations as $situationName => $situationChildren) {
             /** @var Situation */
@@ -138,6 +160,9 @@ class ImportController extends AbstractController
             }
             $situations[] = $situation->getName();
             $this->em->persist($situation);
+
+            $progress++;
+            $this->sendUpdate(Location::class, $total, $progress);
         }
 
         $this->em->flush();
@@ -150,8 +175,14 @@ class ImportController extends AbstractController
     #[Route('/import/locations/{type}', name: 'app_import_locations')]
     public function importLocations(string $type): JsonResponse
     {
+        $this->sendFirstUpdate(Location::class);
+
         $rawLocations = $this->hsXmlService->getLocations($type);
         $locations = [];
+
+        $total = count($rawLocations);
+        $progress = 0;
+        $this->sendUpdate(Location::class, $total, $progress);
 
         foreach ($rawLocations as $provinceName => $towns) {
             /** @var Province */
@@ -193,6 +224,9 @@ class ImportController extends AbstractController
             }
             $locations[] = $province;
             $this->em->persist($province);
+
+            $progress++;
+            $this->sendUpdate(Location::class, $total, $progress);
         }
 
         $this->em->flush();
@@ -205,9 +239,16 @@ class ImportController extends AbstractController
     #[Route('/import/services', name: 'app_import_services')]
     public function importServices(): JsonResponse
     {
+        $total = 8;
+        $progress = 0;
+        $this->sendUpdate(Service::class, $total, $progress);
+
         $services = $this->em->getRepository(Service::class)->findAll();
 
-        if(count($services) > 0) {
+        if (count($services) > 0) {
+            $progress = 8;
+            $this->sendUpdate(Service::class, $total, $progress);
+
             return $this->json([
                 'services' => $services,
             ]);
@@ -295,6 +336,9 @@ class ImportController extends AbstractController
         /** @var Service[] */
         $services = $this->em->getRepository(Service::class)->findAll();
 
+        $progress = 8;
+        $this->sendUpdate(Service::class, $total, $progress);
+
         return $this->json([
             'services' => $services,
         ]);
@@ -374,5 +418,31 @@ class ImportController extends AbstractController
         return $this->json([
             'removedRows' => $removedRows
         ]);
+    }
+
+    private function sendFirstUpdate($className)
+    {
+        $updateData = [
+            'message' => "Importando " . $className . '... ',
+            'status' => 'processing'
+        ];
+        $update = new Update(
+            'import-status',
+            json_encode($updateData)
+        );
+        $this->hub->publish($update);
+    }
+
+    private function sendUpdate($className, $total, $progress)
+    {
+        $updateData = [
+            'message' => "Importando " . $className . '... ' . $progress . '/' . $total,
+            'status' => $progress < $total ? 'processing' : 'success'
+        ];
+        $update = new Update(
+            'import-status',
+            json_encode($updateData)
+        );
+        $this->hub->publish($update);
     }
 }

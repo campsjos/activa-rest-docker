@@ -15,44 +15,63 @@
         background: #F5F5F5;
         padding: 2px 6px;
     }
+    #progress {
+        width: 100%;
+    }
 </style>
 
 <div class="example-wrapper">
     <h1>Hello {{ controller_name }}! ✅</h1>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at
-            <code><a href="{{ '/srv/app/src/Controller/TestController.php'|file_link(0) }}">src/Controller/TestController.php</a></code>
-        </li>
-        <li>Your template at
-            <code><a href="{{ '/srv/app/templates/test/index.html.twig'|file_link(0) }}">templates/test/index.html.twig</a></code>
-        </li>
-    </ul>
+    <div id="messages"></div>
+    <progress id="progress" max="120" value="0"> </progress>
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        const progress = document.getElementById("progress");
+        const messages = document.getElementById('messages');
+
         async function importAll() {
-            const propertyTypes = ['warehouse', 'office', 'local', 'residence'];
             await fetch('/import/situations');
+            progress.value += 10;
             await fetch('/import/services');
+            progress.value += 10;
             await fetch(`/import/locations/warehouse`);
+            progress.value += 10;
             await fetch(`/import/locations/office`);
+            progress.value += 10;
             await fetch(`/import/locations/local`);
+            progress.value += 10;
             await fetch(`/import/locations/residence`);
+            progress.value += 10;
             await fetch(`/import/properties/warehouse`);
+            progress.value += 10;
             await fetch(`/import/properties/office`);
+            progress.value += 10;
             await fetch(`/import/properties/residence`);
+            progress.value += 10;
             await fetch('/import/clean/properties');
+            progress.value += 10;
             await fetch('/import/clean/locations');
+            progress.value += 10;
             await fetch('/import/clean/situations');
+            progress.value += 10;
+            messages.innerHTML = "¡Completado!";
         }
         try {
             importAll();
         } catch (error) {
             console.error('Petó');
         }
+
+        const eventSource = new EventSource("{{ mercure('import-status')|escape('js') }}");
+        eventSource.onmessage = event => {
+            const data = JSON.parse(event.data);
+            console.log(data);
+            messages.innerText = data.message;
+        }
+
     })
 </script>
 {% endblock %}

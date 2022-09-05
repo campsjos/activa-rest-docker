@@ -1,3 +1,5 @@
+SERVER_NAME = activa.local
+
 # Executables (local)
 DOCKER_COMP = docker compose
 
