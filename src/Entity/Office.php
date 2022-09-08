@@ -7,7 +7,11 @@ use App\Repository\OfficeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OfficeRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    attributes: [
+        'pagination_type' => 'page'
+    ]
+)]
 class Office extends Property
 {
 }

@@ -9,7 +9,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ZoneRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    attributes: [
+        'pagination_type' => 'page'
+    ]
+)]
 class Zone extends Location
 {
     #[ORM\ManyToOne(inversedBy: 'zones')]

@@ -7,7 +7,11 @@ use App\Repository\ResidenceRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ResidenceRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    attributes: [
+        'pagination_type' => 'page'
+    ]
+)]
 class Residence extends Property
 {
     #[ORM\Column(nullable: true)]

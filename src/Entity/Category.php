@@ -8,7 +8,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    attributes: [
+        'pagination_type' => 'page'
+    ]
+)]
 class Category
 {
     #[ORM\Id]

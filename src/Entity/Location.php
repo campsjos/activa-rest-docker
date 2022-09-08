@@ -17,7 +17,11 @@ use Gedmo\Mapping\Annotation as Gedmo;
     'town' => 'Town',
     'zone' => 'Zone',
 ])]
-#[ApiResource]
+#[ApiResource(
+    attributes: [
+        'pagination_type' => 'page'
+    ]
+)]
 class Location
 {
     #[ORM\Id]

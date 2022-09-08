@@ -20,7 +20,11 @@ use Gedmo\Translatable\Translatable;
     'residence' => 'Residence',
     'local' => 'Local',
 ])]
-#[ApiResource]
+#[ApiResource(
+    attributes: [
+        'pagination_type' => 'page'
+    ]
+)]
 class Property
 {
     #[ORM\Id]
