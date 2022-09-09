@@ -43,7 +43,6 @@ class ImportController extends AbstractController
     #[Route('/import/properties/{type}', name: 'app_import_properties')]
     public function importProperties(string $type): JsonResponse
     {
-        // TODO: Use Mercure to notificate steps
         $properties = [];
 
         $propertyClass = "";
@@ -75,48 +74,49 @@ class ImportController extends AbstractController
                 /** @var Office|Warehouse|Local|Residence */
                 $property = new $propertyClass;
                 $property->setReference($rawProperty['reference']);
-                $property->setAddress($rawProperty['address']);
-                $property->setPostalCode($rawProperty['postalCode']);
-                $property->setLatitude($rawProperty['latitude']);
-                $property->setLongitude($rawProperty['longitude']);
-                $property->setFeatured($rawProperty['featured']);
-                $property->setImage($rawProperty['image']);
-                $property->setGallery($rawProperty['gallery']);
-                $property->setHabitatsoftId($rawProperty['habitatsoftId']);
-                $property->setOperation($rawProperty['operation']);
-                $property->setPrice($rawProperty['price']);
-                $property->setPriceSqm($rawProperty['priceSqm']);
-                $property->setArea($rawProperty['area']);
-
-                $services = $this->em->getRepository(Service::class)->findBy(['name' => $rawProperty["services"]]);
-                $property->setServices($services);
-
-                $province = $this->em->getRepository(Province::class)->findOneBy(["name" => $rawProperty["province"]]);
-                $town = $province->findTownByName($rawProperty['town']);
-                $zone = $town->findZoneByName($rawProperty['zone']);
-
-                $property->setProvince($province);
-                $property->setTown($town);
-                $property->setZone($zone);
-
-                $parentSituation = $this->em->getRepository(Situation::class)->findOneBy(['name' => $rawProperty['situation1']]);
-                $childSituation = $this->em->getRepository(Situation::class)->findOneBy(['name' => $rawProperty['situation2']]);
-                $property->setSituationParent($parentSituation);
-                $property->setSituationChild($childSituation);
-
-                $translationRep = $this->em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
-                $translationRep
-                    ->translate($property, 'name', 'es', $rawProperty['translations']['es']['title'])
-                    ->translate($property, 'name', 'ca', $rawProperty['translations']['ct']['title'])
-                    ->translate($property, 'name', 'en', $rawProperty['translations']['en']['title'])
-                    ->translate($property, 'name', 'fr', $rawProperty['translations']['fr']['title'])
-                    ->translate($property, 'body', 'es', $rawProperty['translations']['es']['body'])
-                    ->translate($property, 'body', 'ca', $rawProperty['translations']['ct']['body'])
-                    ->translate($property, 'body', 'en', $rawProperty['translations']['en']['body'])
-                    ->translate($property, 'body', 'fr', $rawProperty['translations']['fr']['body']);
-
-                $this->em->persist($property);
             }
+            $property->setAddress($rawProperty['address']);
+            $property->setPostalCode($rawProperty['postalCode']);
+            $property->setLatitude($rawProperty['latitude']);
+            $property->setLongitude($rawProperty['longitude']);
+            $property->setFeatured($rawProperty['featured']);
+            $property->setImage($rawProperty['image']);
+            $property->setGallery($rawProperty['gallery']);
+            $property->setHabitatsoftId($rawProperty['habitatsoftId']);
+            $property->setOperation($rawProperty['operation']);
+            $property->setPrice($rawProperty['price']);
+            $property->setPriceSqm($rawProperty['priceSqm']);
+            $property->setArea($rawProperty['area']);
+            dump($property);
+
+            $services = $this->em->getRepository(Service::class)->findBy(['name' => $rawProperty["services"]]);
+            $property->setServices($services);
+
+            $province = $this->em->getRepository(Province::class)->findOneBy(["name" => $rawProperty["province"]]);
+            $town = $province->findTownByName($rawProperty['town']);
+            $zone = $town->findZoneByName($rawProperty['zone']);
+
+            $property->setProvince($province);
+            $property->setTown($town);
+            $property->setZone($zone);
+
+            $parentSituation = $this->em->getRepository(Situation::class)->findOneBy(['name' => $rawProperty['situation1']]);
+            $childSituation = $this->em->getRepository(Situation::class)->findOneBy(['name' => $rawProperty['situation2']]);
+            $property->setSituationParent($parentSituation);
+            $property->setSituationChild($childSituation);
+
+            $translationRep = $this->em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
+            $translationRep
+                ->translate($property, 'name', 'es', $rawProperty['translations']['es']['title'])
+                ->translate($property, 'name', 'ca', $rawProperty['translations']['ct']['title'])
+                ->translate($property, 'name', 'en', $rawProperty['translations']['en']['title'])
+                ->translate($property, 'name', 'fr', $rawProperty['translations']['fr']['title'])
+                ->translate($property, 'body', 'es', $rawProperty['translations']['es']['body'])
+                ->translate($property, 'body', 'ca', $rawProperty['translations']['ct']['body'])
+                ->translate($property, 'body', 'en', $rawProperty['translations']['en']['body'])
+                ->translate($property, 'body', 'fr', $rawProperty['translations']['fr']['body']);
+
+            $this->em->persist($property);
 
             $progress++;
             $this->sendUpdate($propertyClass, $total, $progress);

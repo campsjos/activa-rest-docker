@@ -87,7 +87,7 @@ class HabitatsoftXmlService
         $inmuebles = $this->loadXml();
         foreach ($inmuebles->Inmueble as $inmueble) {
             if ($this->getType($inmueble->LanguageData->Language->txt_NombreTipoInmueble->__toString()) !== $type) continue;
-
+            
             $property = [
                 "address" => $inmueble->TipoCalle->__toString() . " " . $inmueble->NombreCalleInmueble->__toString() . " " . $inmueble->TipoNumero->__toString() . " " . $inmueble->NumeroCalleInmueble->__toString(),
                 "postalCode" => $inmueble->CodigoPostal->__toString(),
@@ -98,7 +98,7 @@ class HabitatsoftXmlService
                 "zone" => $inmueble->NombreZona->__toString(),
                 "latitude" => $inmueble->Latitud->__toString(),
                 "longitude" => $inmueble->Longitud->__toString(),
-                "featured" => ($inmueble->Destacado === 1),
+                "featured" => ($inmueble->Destacado->__toString() === "1"),
                 "image" => null,
                 "gallery" => [],
                 "habitatsoftId" => $this->cleanId($inmueble->IdInmueble->__toString()),

@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use App\Repository\PropertyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -25,6 +27,7 @@ use Gedmo\Translatable\Translatable;
         'pagination_type' => 'page'
     ]
 )]
+#[ApiFilter(BooleanFilter::class, properties: ['featured'])]
 class Property
 {
     #[ORM\Id]
