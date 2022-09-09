@@ -26,6 +26,7 @@
         "symfony/flex": "^2",
         "symfony/framework-bundle": "6.1.*",
         "symfony/mercure-bundle": "^0.3.5",
+        "symfony/monolog-bundle": "^3.0",
         "symfony/property-access": "6.1.*",
         "symfony/property-info": "6.1.*",
         "symfony/proxy-manager-bridge": "6.1.*",
@@ -93,6 +94,7 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.20",
+        "symfony/debug-bundle": "6.1.*",
         "symfony/maker-bundle": "^1.45",
         "symfony/stopwatch": "6.1.*",
         "symfony/var-dumper": "6.1.*",
